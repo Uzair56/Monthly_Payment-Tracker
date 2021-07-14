@@ -51,18 +51,19 @@
                         <p>Payment</p>
                     </a>
                 </li>
+                <li>
+                    <a href="{{url('cleared-payments')}}">
+                        <i class="pe-7s-note2"></i>
+                        <p>Cleared Payments</p>
+                    </a>
+                </li>
                 {{-- <li>
                     <a href="user.html">
                         <i class="pe-7s-user"></i>
                         <p>User Profile</p>
                     </a>
                 </li>
-                <li>
-                    <a href="table.html">
-                        <i class="pe-7s-note2"></i>
-                        <p>Table List</p>
-                    </a>
-                </li>
+                
                 <li>
                     <a href="typography.html">
                         <i class="pe-7s-news-paper"></i>

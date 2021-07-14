@@ -9,6 +9,20 @@
                         <h4 class="title">Add Payment</h4>
                     </div>
                     <div class="content">
+                       
+                    <form action="{{url('add-user')}}" method="post">
+                        @csrf
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input type="text" name="name" class="form-control" placeholder="Enter New User">
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-info btn-fill">Add New User</button>
+
+                            </div>
+                        </div>
+                    </form>
+                      <hr>
                         <form action="{{route('payments.store')}}" method="POST">
                             @csrf
                          
@@ -17,7 +31,12 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Name</label>
-                                        <input type="text" class="form-control" placeholder="Name" name="name">
+                                       <select name="user_id" id="" class="form-control">
+                                           <option value="">Select User Name</option>
+                                           @foreach ($users as $user)
+                                             <option value="{{$user->id}}">{{$user->name}}</option>
+                                           @endforeach
+                                       </select>
                                     </div>
                                 </div>
                                 <div class="col-md-6">

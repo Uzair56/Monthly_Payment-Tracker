@@ -3,97 +3,113 @@
 namespace App\Http\Controllers;
 
 use App\Models\Payment;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
-    //
-    public function index()
-    {
-        return view('admin.home');
+    public function index(){
+       $payments = Payment::where('status',0)->with('users')->get();
+       return view('admin.home',compact('payments'));
     }
-    public function getPayments(){
+    public function clearedPayments(){
+        $payments = Payment::where('status',1)->with('users')->get();
+        return view('admin.cleared-payments',compact('payments'));
+    }
+  public function addPayment()
+  {
+
+    try {
+        $users = User::where('id','<>',1)->orderBy('id','DESC')->get();
+       return view('admin.add-payment', compact('users'));
+    } catch (\Throwable $th) {
+        return redirect()->back()->with('error', $th->getMessage());
+    }
+  }
+  public function addUser(Request $request)
+  {
+      try {
+          DB::beginTransaction();
+          $data = $request->all();
+          $user = new User;
+          $user->create($data);
+          DB::commit();
+          return redirect()->back()->with('success','User Created'); 
+      } catch (\Throwable $th) {
+          dd($th->getMessage());
+      }
+  }
+    public function store(Request $request)
+    {
         try {
-            $users = Payment::where('id','<>',1)->orderBy('id','DESC')->get();
-           return view('admin.home', compact('users'));
+            DB::beginTransaction();   
+            $data = $request->all();
+            $payment = new Payment;
+            $payment->create($data);
+            DB::commit();
+            return redirect('/home')->with('success', 'Payment Created.');
+
         } catch (\Throwable $th) {
-            return redirect()->back()->with('error', $th->getMessage());
+            DB::rollback();
+            return redirect('/home')->with('error', $th->getMessage());
         }
     }
-//   public function addPayment()
-//   {
-//     return view('admin.add-payment');
-//   }
-//     public function store(Request $request)
-//     {
-//         try {
-//             DB::beginTransaction();   
-//             $data = $request->all();
-//             $user = new User;
-//             $user->create($data);
-//             DB::commit();
-//             return redirect('/payments')->with('success', 'Payment Created.');
+    public function edit($id){
+        try {
+            $payment = Payment::findOrFail($id);
+            $users = User::where('id','<>',1)->orderBy('id','DESC')->get();
+            return view('admin.edit-payment',compact('users','payment'));
+        } catch (\Throwable $th) {
+            $th->getMessage();
+            dd($th->getMessage());
+        }
+    }
+    public function update(Request $request, $id)
+    {
+        try {
+            DB::beginTransaction();
+            $payment = Payment::findOrFail($id);
+            $data = $request->all();
+            $payment->update($data);
+            DB::commit();
+            return redirect('/home')->with('success', 'Payment Updated');
 
-//         } catch (\Throwable $th) {
-//             DB::rollback();
-//             return redirect('/payments')->with('error', $th->getMessage());
-//         }
-//     }
-//     public function edit($id){
-//         try {
-//             $user = User::findOrFail($id);
-//             return view('admin.edit-payment',compact('user'));
-//         } catch (\Throwable $th) {
-//             $th->getMessage();
-//             dd($th->getMessage());
-//         }
-//     }
-//     public function update(Request $request, $id)
-//     {
-//         try {
-//             DB::beginTransaction();
-//             $user = User::findOrFail($id);
-//             $data = $request->all();
-//             $user->update($data);
-//             DB::commit();
-//             return redirect('/payments')->with('success', 'Payment Updated');
+        } catch (\Throwable $th) {
+            //throw $th;
+            DB::rollBack();
+            return redirect('/home')->with('error', $th->getMessage());
+        }
+    }
+    public function destroy($id) 
+    { 
+        try {   
+            $id = decrypt($id); 
+            DB::beginTransaction();
+            Payment::findOrFail($id)->delete();
+            DB::commit();
+            return response()->json(['status' => true, 'msg' => 'Payment has been deleted']);
 
-//         } catch (\Throwable $th) {
-//             //throw $th;
-//             DB::rollBack();
-//             return redirect('/payments')->with('error', $th->getMessage());
-//         }
-//     }
-//     public function destroy($id) 
-//     { 
-//         try {   
-//             $id = decrypt($id); 
-//             DB::beginTransaction();
-//             User::findOrFail($id)->delete();
-//             DB::commit();
-//             return response()->json(['status' => true, 'msg' => 'Payment has been deleted']);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json(['status' => false, 'msg' => $e->getMessage()]);
+        }
+    } 
 
-//         } catch (\Exception $e) {
-//             DB::rollback();
-//             return response()->json(['status' => false, 'msg' => $e->getMessage()]);
-//         }
-//     } 
+    public function clear($id) 
+    { 
+        try {   
+            $id = decrypt($id); 
+            DB::beginTransaction();
+            $payment = Payment::findOrFail($id);
+            $payment->status= 1;
+            $payment->save();
+            DB::commit();
+            return response()->json(['status' => true, 'msg' => 'Payment has been cleared!']);
 
-//     public function clear($id) 
-//     { 
-//         try {   
-//             $id = decrypt($id); 
-//             DB::beginTransaction();
-//             $user = User::findOrFail($id);
-//             $user->status= 1;
-//             $user->save();
-//             DB::commit();
-//             return response()->json(['status' => true, 'msg' => 'Payment has been cleared!']);
-
-//         } catch (\Exception $e) {
-//             DB::rollback();
-//             return response()->json(['status' => false, 'msg' => $e->getMessage()]);
-//         }
-//     } 
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json(['status' => false, 'msg' => $e->getMessage()]);
+        }
+    } 
 }

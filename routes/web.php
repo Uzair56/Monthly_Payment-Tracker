@@ -19,7 +19,8 @@ Route::get('/', function () {
 });
 Route::middleware(['auth:sanctum','verified'])->group(function(){
     Route::get('/home',[HomeController::class,'index']);
-    Route::get('/payments',[HomeController::class,'getPayments']);
+    Route::get('/cleared-payments',[HomeController::class,'clearedPayments']);
+    Route::post('/add-user',[HomeController::class,'addUser']);
     Route::get('/add-payment',[HomeController::class,'addPayment']);
     Route::get('edit-payment/{id}',[HomeController::class,'edit']);
     Route::post('update-payment/{id}',[HomeController::class,'update']);
