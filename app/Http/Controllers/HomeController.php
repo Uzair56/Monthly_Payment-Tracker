@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Payment;
 use App\Models\User;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\StorePaymentRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -27,11 +29,11 @@ class HomeController extends Controller
         return redirect()->back()->with('error', $th->getMessage());
     }
   }
-  public function addUser(Request $request)
+  public function addUser(StoreUserRequest $request)
   {
       try {
           DB::beginTransaction();
-          $data = $request->all();
+          $data = $request->validated();
           $user = new User;
           $user->create($data);
           DB::commit();
@@ -40,11 +42,11 @@ class HomeController extends Controller
           dd($th->getMessage());
       }
   }
-    public function store(Request $request)
+    public function store(StorePaymentRequest $request)
     {
         try {
             DB::beginTransaction();   
-            $data = $request->all();
+            $data = $request->validated();
             $payment = new Payment;
             $payment->create($data);
             DB::commit();
